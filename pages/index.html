@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Etch-a-Sketch</title>
+    <link rel="stylesheet" href="../styles/style.css">
+    <script defer src="../scripts/script.js"></script>
+</head>
+<body>
+    <div class="container flex">
+
+        <nav class="navbar barriecito-regular">Etch-a-Sketch</nav>
+
+        <main class="main-container default-background flex">            
+
+            <ul class="toolbar flex">
+                <li class="tool">
+                    <input type="color" id="base-color-input" 
+                        onchange = "setColor(this)">
+                </li>
+
+                <li class="tool brush">⚙</li>
+                <li class="tool eraser">🧽</li>
+                <li class="tool clear">🗑</li>
+                <li class="tool save">💾</li>
+                <li class="tool sizes">
+                    <ul class="sizes-scroll-bar flex">
+                        <li class="size">25x25</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <div class="draw-pad flex"></div>
+
+
+        </main>
+
+    </div>
+
+
+
+
+</body>
+</html>
