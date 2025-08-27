@@ -1,40 +1,104 @@
-const BRUSH     = document.querySelector('.brush');
-const ERASER    = document.querySelector('.eraser');
-const CLEAR     = document.querySelector('.clear');
-const SAVE      = document.querySelector('.save');
-const SIZE      = document.querySelector('.size');
-const ZOOM_SIZE = document.querySelector('.zoom');
-
+const BRUSH         = document.querySelector('.brush');
+const ERASER        = document.querySelector('.eraser');
+const CLEAR         = document.querySelector('.clear');
+const SAVE          = document.querySelector('.save');
+const SIZE          = document.querySelector('.size');
+const ZOOM_SIZE     = document.querySelector('.zoom');
+const RAINBOW_MODE  = document.querySelector('.rainbow');
 const DRAW_PAD  = document.querySelector('.draw-pad');
 
-const DEFAULT_BACKGROUND_COLOR = 'white'
+const DEFAULT_CELL_BACKGROUND_COLOR = 'white';
+const DEFAULT_TOOL_BACKGROUND_COLOR = '#F1D3F2';
+const ACTIVATED_BACKGROUND_COLOR    = 'yellow';
 
 let coloringColor = 'black';    
 
 let padSize = 8;
 let padZoom = 60;
+const MINIMUM_ZOOM = 1;
+const MAXIMUM_ZOOM = 100;
 
-let state = '';
+
+let state       = '';
+const STATES = {
+    DRAWING: 'drawing',
+    ERASING: 'erasing',
+}
+
 let isMouseDown = false;
+let rainbowMode = false;
+
+let isDrawing = false;
+let isErasing = false;
 
 fillSizeSelection();
 fillZoomSelection();
 fillDrawPad(padSize);
 
 BRUSH.addEventListener('click', () => {
-    state = 'drawing';
+    if (isDrawing === false){
+        state = STATES.DRAWING;
+        isDrawing = true;
+        BRUSH.style.backgroundColor = ACTIVATED_BACKGROUND_COLOR;
+
+        if (isErasing === true)  {
+            isErasing = false;
+            ERASER.style.backgroundColor = DEFAULT_TOOL_BACKGROUND_COLOR;
+        }
+    } else {
+        state = '';
+        isDrawing = false;
+        BRUSH.style.backgroundColor = DEFAULT_TOOL_BACKGROUND_COLOR;
+    }
 })
 
 ERASER.addEventListener('click', () => {
-    state = 'eraser'
+    if (isErasing === false){
+        state = STATES.ERASING;
+        isErasing = true;
+        ERASER.style.backgroundColor = ACTIVATED_BACKGROUND_COLOR;
+
+        if (isDrawing === true) {
+            isDrawing = false;
+            BRUSH.style.backgroundColor = DEFAULT_TOOL_BACKGROUND_COLOR;
+        }
+
+    } else {
+        state = '';
+        isErasing = false;
+        ERASER.style.backgroundColor = DEFAULT_TOOL_BACKGROUND_COLOR;
+    }
 })
 
 CLEAR.addEventListener('click', () => {
-  const ok = window.confirm('Clear the drawing? This cannot be undone.');
-  if (!ok) return;
+  if (warningCheck() === false) return;
   
   clearDrawPad();
 });
+
+RAINBOW_MODE.addEventListener('click', () => {
+    if (rainbowMode === false) {
+        rainbowMode = true;
+    } else {
+        rainbowMode = false;
+    }
+
+    if (rainbowMode === true) {
+        RAINBOW_MODE.style.backgroundColor = ACTIVATED_BACKGROUND_COLOR;
+    } else {
+        RAINBOW_MODE.style.backgroundColor = DEFAULT_TOOL_BACKGROUND_COLOR;
+    }
+})
+
+function warningCheck() {
+    const ok 
+        = window.confirm('Clear the drawing? This cannot be undone.');
+
+    if (!ok) return false;
+
+    return true;
+}
+
 
 // Zoom functionality for draw-pad
 DRAW_PAD.addEventListener('wheel', function(e) {
@@ -45,14 +109,13 @@ DRAW_PAD.addEventListener('wheel', function(e) {
     } 
     // Scroll down 
     else if (e.deltaY > 0) {
-        if (padZoom === 1) return;
         padZoom = padZoom -1;
         zoomDrawPad(padZoom)
     }
 });
 
 function zoomDrawPad(newZoom) {
-    if (newZoom > 100 || newZoom < 1) return;
+    if (newZoom > MAXIMUM_ZOOM || newZoom < MINIMUM_ZOOM) return;
 
     DRAW_PAD.style.width = `${padSize * newZoom}px`;
     DRAW_PAD.style.height = `${padSize * newZoom}px`;
@@ -123,22 +186,29 @@ function fillDrawPad(newSize) {
 
 function clearDrawPad() {
     document.querySelectorAll('.default-cell').forEach(c => {
-        c.style.backgroundColor= DEFAULT_BACKGROUND_COLOR;
-        c.dataset.color = DEFAULT_BACKGROUND_COLOR;
+        c.style.backgroundColor= DEFAULT_CELL_BACKGROUND_COLOR;
+        c.dataset.color = DEFAULT_CELL_BACKGROUND_COLOR;
     })
 }
 
 
 function colorCell(cell) {
     if (state == 'drawing') {
-        const paint = coloringColor
-        cell.style.backgroundColor = coloringColor;
+
+        let paint = coloringColor;
+
+        if (rainbowMode === true) {
+            paint = getRandomColor();
+        } else {
+            paint = coloringColor
+        }
+        
+        cell.style.backgroundColor = paint;
         cell.dataset.color = paint;
-    } else {
-        cell.style.backgroundColor = 'white';
+    } else if (state === STATES.ERASING) {
+        cell.style.backgroundColor = DEFAULT_CELL_BACKGROUND_COLOR;
     }
 
-    console.log("in colorcell" + isMouseDown)
 }
 
 function colorHoveredCell(cell) {
@@ -158,6 +228,16 @@ function checkIfColoring(cell) {
         console.log("mouse not down");
     }
 }
+
+function getRandomColor() {
+  let letters = '0123456789ABCDEF';
+  let color = '#';
+  for (var i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
+
 
 function fillSizeSelection() {
     for (let i = 1; i <= 100; i++) {
@@ -186,7 +266,11 @@ function fillZoomSelection() {
 }
 
 SIZE.addEventListener('change', (e) => {
-    setSize(e.target.value);
+    if (warningCheck() === true) {
+        setSize(e.target.value);
+    } else {
+        e.target.value = padSize;
+    }
 })
 
 ZOOM_SIZE.addEventListener('change', (e) => {
@@ -195,5 +279,6 @@ ZOOM_SIZE.addEventListener('change', (e) => {
 
 function setSize(newSize) {
     padSize = newSize;
+
     fillDrawPad(padSize)
 }
