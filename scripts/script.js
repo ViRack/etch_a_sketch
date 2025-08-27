@@ -3,6 +3,7 @@ const ERASER    = document.querySelector('.eraser');
 const CLEAR     = document.querySelector('.clear');
 const SAVE      = document.querySelector('.save');
 const SIZE      = document.querySelector('.size');
+const ZOOM_SIZE = document.querySelector('.zoom');
 
 const DRAW_PAD  = document.querySelector('.draw-pad');
 
@@ -10,31 +11,54 @@ const DEFAULT_BACKGROUND_COLOR = 'white'
 
 let coloringColor = 'black';    
 
-let padSize = 16;
+let padSize = 8;
+let padZoom = 60;
 
 let state = '';
 let isMouseDown = false;
 
+fillSizeSelection();
+fillZoomSelection();
 fillDrawPad(padSize);
 
 BRUSH.addEventListener('click', () => {
     state = 'drawing';
-    console.log('drawing')
 })
 
 ERASER.addEventListener('click', () => {
     state = 'eraser'
-    console.log('erasing')
-
 })
 
-CLEAR.addEventListener('click', clearDrawPad);
-
-
-// bugged, only adds more elements, need to go through elements and whiten them instead.
 CLEAR.addEventListener('click', () => {
-    fillDrawPad(padSize)
-})
+  const ok = window.confirm('Clear the drawing? This cannot be undone.');
+  if (!ok) return;
+  
+  clearDrawPad();
+});
+
+// Zoom functionality for draw-pad
+DRAW_PAD.addEventListener('wheel', function(e) {
+    // Scroll up
+    if (e.deltaY < 0){
+        padZoom = padZoom + 1;
+        zoomDrawPad(padZoom)
+    } 
+    // Scroll down 
+    else if (e.deltaY > 0) {
+        if (padZoom === 1) return;
+        padZoom = padZoom -1;
+        zoomDrawPad(padZoom)
+    }
+});
+
+function zoomDrawPad(newZoom) {
+    if (newZoom > 100 || newZoom < 1) return;
+
+    DRAW_PAD.style.width = `${padSize * newZoom}px`;
+    DRAW_PAD.style.height = `${padSize * newZoom}px`;
+
+    ZOOM_SIZE.value = newZoom;
+}
 
 
 function setColor(input) {
@@ -43,8 +67,13 @@ function setColor(input) {
 }
 
 function fillDrawPad(newSize) {
+
+    DRAW_PAD.innerHTML = "";
+
     let column = 1;
     let row = 1;
+
+    zoomDrawPad(padZoom)
 
     while (column <= newSize) {
         let cell = document.createElement("div");
@@ -63,9 +92,26 @@ function fillDrawPad(newSize) {
                 e.preventDefault();
             })
 
-            newCell.addEventListener('mousedown', () => colorHoveredCell(newCell));
+            // Mouse
+            newCell.addEventListener('mousedown', 
+                () => colorHoveredCell(newCell));
+
             newCell.addEventListener('mouseup', setMouseUp);
-            newCell.addEventListener('mouseenter', () => checkIfColoring(newCell));
+
+            newCell.addEventListener('mouseenter', 
+                () => checkIfColoring(newCell));
+
+
+            // Touchscreen not yet implemented.
+
+            // newCell.addEventListener('touchstart', 
+            //     () => colorHoveredCell(newCell));
+
+            // newCell.addEventListener('touchend', setMouseUp);
+
+            // newCell.addEventListener('touchmove', 
+            //     () => checkIfColoring(newCell))
+
 
             cell.appendChild(newCell);
             row = row + 1;
@@ -76,17 +122,18 @@ function fillDrawPad(newSize) {
 }
 
 function clearDrawPad() {
-    while (DRAW_PAD.firstChild) {
-       DRAW_PAD.removeChild(DRAW_PAD.firstChild);
-       console.log('clearing children');
-    }
+    document.querySelectorAll('.default-cell').forEach(c => {
+        c.style.backgroundColor= DEFAULT_BACKGROUND_COLOR;
+        c.dataset.color = DEFAULT_BACKGROUND_COLOR;
+    })
 }
 
 
 function colorCell(cell) {
     if (state == 'drawing') {
-        console.log('in coloringColor');
+        const paint = coloringColor
         cell.style.backgroundColor = coloringColor;
+        cell.dataset.color = paint;
     } else {
         cell.style.backgroundColor = 'white';
     }
@@ -107,4 +154,46 @@ function checkIfColoring(cell) {
     if (isMouseDown) {
         colorCell(cell);
     }
+    else {
+        console.log("mouse not down");
+    }
+}
+
+function fillSizeSelection() {
+    for (let i = 1; i <= 100; i++) {
+        const option = document.createElement("option");
+        option.value = i;
+        option.textContent = i;
+
+        option.addEventListener('click', () => setSize(option.value));
+
+        SIZE.appendChild(option);
+    }
+
+    SIZE.value = padSize;
+}
+
+function fillZoomSelection() {
+    for (let i = 1; i <= 100; i++) {
+        const zoomSize = document.createElement("option");
+        zoomSize.value = i;
+        zoomSize.textContent = i;
+
+        zoomSize.addEventListener('click', () => setSize(option.value));
+
+        ZOOM_SIZE.appendChild(zoomSize);
+    }
+}
+
+SIZE.addEventListener('change', (e) => {
+    setSize(e.target.value);
+})
+
+ZOOM_SIZE.addEventListener('change', (e) => {
+    zoomDrawPad(e.target.value) 
+})
+
+function setSize(newSize) {
+    padSize = newSize;
+    fillDrawPad(padSize)
 }

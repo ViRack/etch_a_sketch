@@ -20,13 +20,17 @@
                         onchange = "setColor(this)">
                 </li>
 
-                <li class="tool brush">⚙</li>
-                <li class="tool eraser">🧽</li>
-                <li class="tool clear">🗑</li>
-                <li class="tool save">💾</li>
-                <li class="tool sizes">
-                    <ul class="sizes-scroll-bar flex">
-                        <li class="size">25x25</li>
+                <li class="tool brush tertiary-font" >🖌️</li>
+                <li class="tool eraser tertiary-font">🧽</li>
+                <li class="tool clear tertiary-font">🗑</li>
+                <li class="tool sizes tertiary-font">
+                    <ul class="sizes-scroll-bar flex quaternary-font">📏&nbsp;
+                        <select class="size" id="numberSelect" name="number"></select>
+                    </ul>
+                </li>
+                <li class="tool zooms tertiary-font">
+                    <ul class="zoom-scroll-bar flex quaternary-font">🔍&nbsp;
+                        <select class="zoom" id="zoomSelect" name="number"></select>
                     </ul>
                 </li>
             </ul>
