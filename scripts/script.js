@@ -160,6 +160,7 @@ function fillDrawPad(newSize) {
     let column = 1;
     let row = 1;
 
+    
     zoomDrawPad(padZoom)
 
     while (column <= newSize) {
