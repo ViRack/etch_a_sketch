@@ -9,24 +9,27 @@
 </head>
 <body>
     <div class="container flex">
-
-        <nav class="navbar barriecito-regular">Etch-a-Sketch</nav>
-
         <main class="main-container default-background flex">            
 
-            <ul class="toolbar flex">
+            <ul class="toolbar toolflex">
+                <li class="tool site-logo barriecito-regular">Etch-a-Sketch</li>
                 <li class="tool">
                     <input type="color" id="base-color-input" 
                         onchange = "setColor(this)">
                 </li>
-
                 <li class="tool rainbow tertiary-font" >🌈</li>
                 <li class="tool brush tertiary-font" >🖌️</li>
                 <li class="tool eraser tertiary-font">🧽</li>
+                <li class="tool grid tertiary-font" >⊞</li>
                 <li class="tool clear tertiary-font">🗑</li>
                 <li class="tool sizes tertiary-font">
-                    <ul class="sizes-scroll-bar flex quaternary-font">📏&nbsp;
-                        <select class="size" id="numberSelect" name="number"></select>
+                    <ul class="sizes-scroll-bar flex quaternary-font">
+                        📏&nbsp;
+                        <select 
+                            class="size" 
+                            id="numberSelect" 
+                            name="number">
+                        </select>
                     </ul>
                 </li>
                 <li class="tool zooms tertiary-font">
@@ -37,7 +40,6 @@
             </ul>
 
             <div class="draw-pad flex"></div>
-
 
         </main>
 

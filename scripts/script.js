@@ -5,11 +5,12 @@ const SAVE          = document.querySelector('.save');
 const SIZE          = document.querySelector('.size');
 const ZOOM_SIZE     = document.querySelector('.zoom');
 const RAINBOW_MODE  = document.querySelector('.rainbow');
-const DRAW_PAD  = document.querySelector('.draw-pad');
+const DRAW_PAD      = document.querySelector('.draw-pad');
+const GRID          = document.querySelector('.grid');
 
 const DEFAULT_CELL_BACKGROUND_COLOR = 'white';
-const DEFAULT_TOOL_BACKGROUND_COLOR = '#F1D3F2';
-const ACTIVATED_BACKGROUND_COLOR    = 'yellow';
+const DEFAULT_TOOL_BACKGROUND_COLOR = '#DCDCDC';
+const ACTIVATED_BACKGROUND_COLOR    = '#1E93AB';
 
 let coloringColor = 'black';    
 
@@ -17,6 +18,7 @@ let padSize = 8;
 let padZoom = 60;
 const MINIMUM_ZOOM = 1;
 const MAXIMUM_ZOOM = 100;
+const MAXIMUM_PIXELS = 950;
 
 
 let state       = '';
@@ -30,6 +32,9 @@ let rainbowMode = false;
 
 let isDrawing = false;
 let isErasing = false;
+
+let isGridOn = false;
+
 
 fillSizeSelection();
 fillZoomSelection();
@@ -70,10 +75,15 @@ ERASER.addEventListener('click', () => {
     }
 })
 
+GRID.addEventListener('click', () => {
+    gridDrawPad();
+})
+
 CLEAR.addEventListener('click', () => {
-  if (warningCheck() === false) return;
+    if (warningCheck() === false) return;
   
-  clearDrawPad();
+    clearDrawPad();
+
 });
 
 RAINBOW_MODE.addEventListener('click', () => {
@@ -90,20 +100,14 @@ RAINBOW_MODE.addEventListener('click', () => {
     }
 })
 
-function warningCheck() {
-    const ok 
-        = window.confirm('Clear the drawing? This cannot be undone.');
-
-    if (!ok) return false;
-
-    return true;
-}
-
-
 // Zoom functionality for draw-pad
 DRAW_PAD.addEventListener('wheel', function(e) {
     // Scroll up
     if (e.deltaY < 0){
+        if ((padSize * padZoom) > MAXIMUM_PIXELS) {
+            return;
+        }
+
         padZoom = padZoom + 1;
         zoomDrawPad(padZoom)
     } 
@@ -114,8 +118,20 @@ DRAW_PAD.addEventListener('wheel', function(e) {
     }
 });
 
+SIZE.addEventListener('change', (e) => {
+    if (warningCheck() === true) {
+        setSize(e.target.value);
+    } else {
+        e.target.value = padSize;
+    }
+})
+
+ZOOM_SIZE.addEventListener('change', (e) => {
+    zoomDrawPad(e.target.value) 
+})
+
 function zoomDrawPad(newZoom) {
-    if (newZoom > MAXIMUM_ZOOM || newZoom < MINIMUM_ZOOM) return;
+    if (newZoom > MAXIMUM_ZOOM || newZoom < MINIMUM_ZOOM || (padSize * newZoom) > MAXIMUM_PIXELS) return;
 
     DRAW_PAD.style.width = `${padSize * newZoom}px`;
     DRAW_PAD.style.height = `${padSize * newZoom}px`;
@@ -124,9 +140,17 @@ function zoomDrawPad(newZoom) {
 }
 
 
+function warningCheck() {
+    const ok 
+        = window.confirm('Clear the drawing? This cannot be undone.');
+
+    if (!ok) return false;
+
+    return true;
+}
+
 function setColor(input) {
     coloringColor = input.value;
-    console.log("selected color: " + input.value);
 }
 
 function fillDrawPad(newSize) {
@@ -182,6 +206,11 @@ function fillDrawPad(newSize) {
         
         row = 1;
     }
+
+    if (isGridOn === true) {
+        isGridOn = false;
+        gridDrawPad();
+    }
 }
 
 function clearDrawPad() {
@@ -191,6 +220,25 @@ function clearDrawPad() {
     })
 }
 
+function gridDrawPad() {
+    let allCells = document.querySelectorAll('.default-cell');
+
+    if (isGridOn === false) {
+        isGridOn = true;
+        
+        allCells.forEach(node => {
+            node.classList.add('default-cell-grid-on');
+        })
+
+        GRID.style.backgroundColor = ACTIVATED_BACKGROUND_COLOR;
+    } else {
+        isGridOn = false;
+        GRID.style.backgroundColor = DEFAULT_TOOL_BACKGROUND_COLOR;
+        allCells.forEach(node => {
+            node.classList.remove('default-cell-grid-on');
+        })
+    }
+}
 
 function colorCell(cell) {
     if (state == 'drawing') {
@@ -223,9 +271,6 @@ function setMouseUp() {
 function checkIfColoring(cell) {
     if (isMouseDown) {
         colorCell(cell);
-    }
-    else {
-        console.log("mouse not down");
     }
 }
 
@@ -265,20 +310,8 @@ function fillZoomSelection() {
     }
 }
 
-SIZE.addEventListener('change', (e) => {
-    if (warningCheck() === true) {
-        setSize(e.target.value);
-    } else {
-        e.target.value = padSize;
-    }
-})
-
-ZOOM_SIZE.addEventListener('change', (e) => {
-    zoomDrawPad(e.target.value) 
-})
 
 function setSize(newSize) {
     padSize = newSize;
-
     fillDrawPad(padSize)
 }
